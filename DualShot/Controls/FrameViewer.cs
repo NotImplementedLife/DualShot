@@ -1,6 +1,7 @@
 ﻿using DualShot.Data;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,18 +28,18 @@ namespace DualShot.Controls
             SetTop(BottomScreenImage, 0);
             Children.Add(BottomScreenImage);
 
-            TopScreenImage.Background = Brushes.Red;
-            BottomScreenImage.Background = Brushes.Blue;
+            //TopScreenImage.Background = Brushes.Red;
+            //BottomScreenImage.Background = Brushes.Blue;
         }
 
         public Int32Rect TopScreenRect = new Int32Rect(0, 0, 1, 1);
         public Int32Rect BottomScreenRect = new Int32Rect(0, 0, 1, 1);
 
         public Image FrameImage = new Image();
-        /*public Image TopScreenImage    = new Image();
-        public Image BottomScreenImage = new Image();*/
-        public Canvas TopScreenImage = new Canvas();
-        public Canvas BottomScreenImage = new Canvas();
+        public Image TopScreenImage = new Image { Stretch = Stretch.Fill };
+        public Image BottomScreenImage = new Image { Stretch = Stretch.Fill };
+        //public Canvas TopScreenImage = new Canvas();
+        //public Canvas BottomScreenImage = new Canvas();
 
         public static DependencyProperty FrameProperty = DependencyProperty.Register("Frame", typeof(BitmapImage), typeof(FrameViewer),
             new PropertyMetadata(null, FramePropertyChanged));
@@ -68,17 +69,59 @@ namespace DualShot.Controls
             o.BottomScreenImage.Height = o.BottomScreenRect.Height;
         }
 
-        /*public static DependencyProperty ScreenshotProperty = DependencyProperty.Register("Screenshot", typeof(BitmapImage), typeof(FrameViewer),
-            new PropertyMetadata(null, ScreenshotPropertyChanged);
+        public static DependencyProperty ScreenshotProperty = DependencyProperty.Register("Screenshot", typeof(BitmapImage), typeof(FrameViewer),
+            new PropertyMetadata(null, ScreenshotPropertyChanged));
+
+        public BitmapImage Screenshot
+        {
+            get => GetValue(ScreenshotProperty) as BitmapImage;
+            set => SetValue(ScreenshotProperty, value);
+        }
 
         private static void ScreenshotPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var o = d as FrameViewer;
             var ss = e.NewValue as BitmapImage;
-            if(ss==null)
+            if (ss == null)
             {
-
+                o.TopScreenImage = null;
+                o.BottomScreenImage = null;
+                return;
             }
-        }*/
+            if(ss.Height==1)
+            {
+                o.TopScreenImage = null;
+                o.BottomScreenImage = null;
+                return;
+            }
+            var cnv = new Canvas { Width = (int)ss.Width, Height = (int)(ss.Height / 2) };
+            var img = new Image { Source = ss };
+            cnv.Children.Add(img);
+            SetLeft(img, 0);
+            SetTop(img, 0);
+            cnv.Measure(new Size(cnv.Width, cnv.Height));
+            cnv.Arrange(new Rect(new Size(cnv.Width, cnv.Height)));
+            var topHalf = new RenderTargetBitmap((int)cnv.Width, (int)cnv.Height, 96, 96, PixelFormats.Pbgra32);
+            topHalf.Render(cnv);
+            SetTop(img, -cnv.Height);
+            cnv.Measure(new Size(cnv.Width, cnv.Height));
+            cnv.Arrange(new Rect(new Size(cnv.Width, cnv.Height)));
+            var bottomHalf = new RenderTargetBitmap((int)cnv.Width, (int)cnv.Height, 96, 96, PixelFormats.Pbgra32);
+            bottomHalf.Render(cnv);
+            o.TopScreenImage.Source = topHalf;
+            o.BottomScreenImage.Source = bottomHalf;
+        }
+
+        public void Save(string filename)
+        {
+            RenderTargetBitmap result = new RenderTargetBitmap((int)Width, (int)Height, 96, 96, PixelFormats.Pbgra32);
+            result.Render(this);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(result));
+            using (var file = File.Create(filename))
+            {
+                encoder.Save(file);
+            }
+        }
     }
 }

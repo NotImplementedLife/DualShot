@@ -8,13 +8,46 @@
         mc:Ignorable="d"
         Title="DualShot" MinWidth="500" MinHeight="500" Width="500" Height="500"
         Loaded="Window_Loaded">
+    <Window.Resources>
+        <Style x:Key="TopBarButton" TargetType="{x:Type Button}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Name="bBorder" BorderThickness="1" BorderBrush="Transparent" Width="32" Height="32">
+                            <Grid>
+                                <ContentPresenter Content="{TemplateBinding Property=Content}" Width="29" Height="29"
+                                                  VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="bBorder" Property="BorderBrush" Value="#D42C5D"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
     <Grid>
-        <Grid Name="MainContent">
+        <Grid Name="MainContent" Background="Cornsilk">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal" Height="32" Background="LightGray">
+            <StackPanel Orientation="Horizontal" Height="32">
+                <Button Style="{StaticResource ResourceKey=TopBarButton}" ToolTip="Import Image"
+                        Name="LoadButton" Click="LoadButton_Click">
+                    <Button.Content>
+                        <Image Source="/DualShot;component/Images/Icons/folder-icon.png"/>
+                    </Button.Content>
+                </Button>
+                <Button Style="{StaticResource ResourceKey=TopBarButton}" ToolTip="Export Image"
+                        Name="SaveButton" Click="SaveButton_Click">
+                    <Button.Content>
+                        <Image Source="/DualShot;component/Images/Icons/save-icon.png"/>
+                    </Button.Content>
+                </Button>
                 <controls:FrameSelector ValueChanged="FrameSelector_ValueChanged"/>
             </StackPanel>
             <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 

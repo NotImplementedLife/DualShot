@@ -1,5 +1,6 @@
 ﻿using DualShot.Controls;
 using DualShot.Data;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,6 +51,44 @@ namespace DualShot.Windows
                     FrameViewer.Frame = Frames.Data["DSi"]["Black"];
                 });
             });
+        }
+
+        private OpenFileDialog OFD = new OpenFileDialog
+        {
+            Filter = "Image files (*.bmp, *.jpg, *.jpeg, *.png) | *.bmp; *.jpg; *.jpeg; *.png",
+            Multiselect = false,
+            Title = "DualShot - Import"
+        };
+
+        private SaveFileDialog SFD = new SaveFileDialog
+        {
+            Filter = "Image files (*.png) | *.png",
+            Title="DualShot - Export"
+        };
+
+        private void LoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (OFD.ShowDialog() == true) 
+            {
+                BitmapImage source = null;
+                try
+                {
+                    source = new BitmapImage(new Uri(OFD.FileName, UriKind.Absolute));
+                }
+                catch(Exception)
+                {
+                    MessageBox.Show("Could not load image.");
+                }
+                FrameViewer.Screenshot = source;
+            }
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SFD.ShowDialog() == true) 
+            {
+                FrameViewer.Save(SFD.FileName);
+            }
         }
     }
 }
