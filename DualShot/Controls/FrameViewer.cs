@@ -15,7 +15,7 @@ namespace DualShot.Controls
     public class FrameViewer : Canvas
     {
         public FrameViewer()
-        {                       
+        {            
             SetLeft(FrameImage, 0);
             SetTop(FrameImage, 0);
             Children.Add(FrameImage);
@@ -53,7 +53,7 @@ namespace DualShot.Controls
         private static void FramePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var o = d as FrameViewer;
-            var i = e.NewValue as BitmapSource;
+            var i = e.NewValue as BitmapSource;            
             o.FrameImage.Source = i;
             o.Width = o.FrameImage.Width = i.PixelWidth;
             o.Height = o.FrameImage.Height = i.PixelHeight;
@@ -115,7 +115,14 @@ namespace DualShot.Controls
         public void Save(string filename)
         {
             RenderTargetBitmap result = new RenderTargetBitmap((int)Width, (int)Height, 96, 96, PixelFormats.Pbgra32);
-            result.Render(this);
+            DrawingVisual dv = new DrawingVisual();
+            using (DrawingContext ctx = dv.RenderOpen())
+            {
+                VisualBrush vb = new VisualBrush(this);
+                ctx.DrawRectangle(vb, null, new Rect(new Point(), new Size((int)Width,(int)Height)));
+            }
+            result.Render(dv);
+                        
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(result));
             using (var file = File.Create(filename))
