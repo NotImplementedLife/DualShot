@@ -1,4 +1,4 @@
-# DualShot V0.1
+# DualShot V0.2
 Console frame wrap around DS emulator screenshot 
 
 Beautify your DS screenshots by making it seem you took a perfect picture of the DS while playing
